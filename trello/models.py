@@ -148,6 +148,7 @@ class CardMember(models.Model):
 
 class CardAttachment(models.Model):
     card = models.ForeignKey(Card, on_delete=models.CASCADE, related_name='attachments')
+    slug = models.SlugField(max_length=40, blank=True)
     file = models.FileField(upload_to='attachments/', verbose_name=_('Attachment'))
     is_active = models.BooleanField(default=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
@@ -161,9 +162,15 @@ class CardAttachment(models.Model):
     def __str__(self):
         return f"{self.card.name} - {self.file.name}"
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = str(uuid.uuid4())
+        super().save(*args, **kwargs)
+
 
 class CardComment(models.Model):
     card = models.ForeignKey(Card, on_delete=models.CASCADE, related_name='comments')
+    slug = models.SlugField(max_length=40, blank=True)
     user = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='comments')
     comment = models.TextField(max_length=500, verbose_name=_('Comment'))
     is_active = models.BooleanField(default=True)
@@ -178,9 +185,15 @@ class CardComment(models.Model):
     def __str__(self):
         return f"{self.card.name} - {self.user.first_name} {self.user.sur_name}"
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = str(uuid.uuid4())
+        super().save(*args, **kwargs)
+
 
 class CardTag(models.Model):
     card = models.ForeignKey(Card, on_delete=models.CASCADE, related_name='tags')
+    slug = models.SlugField(max_length=40, blank=True)
     tag = models.CharField(max_length=50, verbose_name=_('Tag'))
     is_active = models.BooleanField(default=True)
 
@@ -192,3 +205,8 @@ class CardTag(models.Model):
 
     def __str__(self):
         return f"{self.card.name} - {self.tag}"
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = str(uuid.uuid4())
+        super().save(*args, **kwargs)
