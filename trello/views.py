@@ -3,11 +3,10 @@ from rest_framework import viewsets
 from rest_framework.exceptions import PermissionDenied, NotFound
 from rest_framework.permissions import IsAuthenticated
 
-from .models import List, Board, Card, BoardMember, ListMember, CardMember
+from .models import CardAttachment, CardComment, CardTag, Card, List, Board, BoardMember, ListMember, CardMember
 from .permissions import IsBoardAdmin
-from .serializers import BoardSerializer
-from .serializers import CardSerializer
-from .serializers import ListSerializer
+from .serializers import ListSerializer, CardSerializer, BoardSerializer, CardAttachmentSerializer, \
+    CardCommentSerializer, CardTagSerializer
 
 
 class BoardViewSet(viewsets.ModelViewSet):
@@ -83,3 +82,63 @@ class CardViewSet(viewsets.ModelViewSet):
         if self.action in ['update', 'partial_update', 'destroy']:
             self.permission_classes = [IsAuthenticated, IsBoardAdmin]
         return super().get_permissions()
+
+
+class CardAttachmentViewSet(viewsets.ModelViewSet):
+    serializer_class = CardAttachmentSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'slug'
+
+    def get_queryset(self):
+        return CardAttachment.objects.filter(card__list__board__members__user=self.request.user,
+                                             card__list__board__members__is_active=True)
+
+    def perform_create(self, serializer):
+        try:
+            card_instance = Card.objects.get(slug=self.request.data.get('card'))
+        except ObjectDoesNotExist:
+            raise NotFound("Card not found.")
+        serializer.save(card=card_instance)
+
+    def perform_update(self, serializer):
+        serializer.save()
+
+
+class CardCommentViewSet(viewsets.ModelViewSet):
+    serializer_class = CardCommentSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'slug'
+
+    def get_queryset(self):
+        return CardComment.objects.filter(card__list__board__members__user=self.request.user,
+                                          card__list__board__members__is_active=True)
+
+    def perform_create(self, serializer):
+        try:
+            card_instance = Card.objects.get(slug=self.request.data.get('card'))
+        except ObjectDoesNotExist:
+            raise NotFound("Card not found.")
+        serializer.save(card=card_instance, user=self.request.user)
+
+    def perform_update(self, serializer):
+        serializer.save()
+
+
+class CardTagViewSet(viewsets.ModelViewSet):
+    serializer_class = CardTagSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'slug'
+
+    def get_queryset(self):
+        return CardTag.objects.filter(card__list__board__members__user=self.request.user,
+                                      card__list__board__members__is_active=True)
+
+    def perform_create(self, serializer):
+        try:
+            card_instance = Card.objects.get(slug=self.request.data.get('card'))
+        except ObjectDoesNotExist:
+            raise NotFound("Card not found.")
+        serializer.save(card=card_instance)
+
+    def perform_update(self, serializer):
+        serializer.save()
