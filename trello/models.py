@@ -29,6 +29,12 @@ class Board(models.Model):
         self.updated_at = timezone.now()
         super().save(*args, **kwargs)
 
+    def is_member(self, user):
+        return BoardMember.objects.filter(board=self, user=user, is_active=True).exists()
+
+    def is_admin(self, user):
+        return BoardMember.objects.filter(board=self, user=user, is_active=True, is_admin=True).exists()
+
 
 class List(models.Model):
     board = models.ForeignKey(Board, on_delete=models.CASCADE, related_name='lists')
@@ -55,6 +61,9 @@ class List(models.Model):
         self.updated_at = timezone.now()
         super().save(*args, **kwargs)
 
+    def is_admin(self, user):
+        return BoardMember.objects.filter(board=self.board, user=user, is_active=True, is_admin=True).exists()
+
 
 class Card(models.Model):
     list = models.ForeignKey(List, on_delete=models.CASCADE, related_name='cards')
@@ -80,6 +89,9 @@ class Card(models.Model):
             self.slug = str(uuid.uuid4())
         self.updated_at = timezone.now()
         super().save(*args, **kwargs)
+
+    def is_admin(self, user):
+        return BoardMember.objects.filter(board=self.list.board, user=user, is_active=True, is_admin=True).exists()
 
 
 class BoardMember(models.Model):

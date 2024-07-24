@@ -1,15 +1,16 @@
 from rest_framework import status
 from rest_framework.generics import GenericAPIView
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from users.serializers import RegisterSerializer, LoginSerializer, LogoutSerializer
+from .permissions import IsNOTAuthenticated
 
 
 # Create your views here.
 
 class RegisterView(GenericAPIView):
-    permission_classes = [AllowAny]  # TODO CHECK THIS
+    permission_classes = [IsNOTAuthenticated]
     serializer_class = RegisterSerializer
 
     def post(self, request):
@@ -28,7 +29,7 @@ class RegisterView(GenericAPIView):
 
 class LoginView(GenericAPIView):
     serializer_class = LoginSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsNOTAuthenticated]
 
     def post(self, request):
         serializer = self.get_serializer(data=request.data, context={'request': request})
@@ -36,17 +37,9 @@ class LoginView(GenericAPIView):
         return Response(serializer.validated_data, status=status.HTTP_200_OK)
 
 
-class TestAuthentication(GenericAPIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        return Response({'message': 'You are authenticated'}, status=status.HTTP_200_OK)
-
-
 class LogoutView(GenericAPIView):
     serializer_class = LogoutSerializer
-
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def post(self, request):
         serializer = self.get_serializer(data=request.data)

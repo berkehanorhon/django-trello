@@ -8,8 +8,8 @@ User = get_user_model()
 
 
 class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
-    password2 = serializers.CharField(write_only=True)
+    password = serializers.CharField(write_only=True, min_length=6, max_length=68)
+    password2 = serializers.CharField(write_only=True, min_length=6, max_length=68)
 
     class Meta:
         model = User
