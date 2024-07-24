@@ -177,3 +177,18 @@ class CardComment(models.Model):
 
     def __str__(self):
         return f"{self.card.name} - {self.user.first_name} {self.user.sur_name}"
+
+
+class CardTag(models.Model):
+    card = models.ForeignKey(Card, on_delete=models.CASCADE, related_name='tags')
+    tag = models.CharField(max_length=50, verbose_name=_('Tag'))
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['-id']
+        verbose_name = _('Card Tag')
+        verbose_name_plural = _("Card Tags")
+        get_latest_by = 'id'
+
+    def __str__(self):
+        return f"{self.card.name} - {self.tag}"
